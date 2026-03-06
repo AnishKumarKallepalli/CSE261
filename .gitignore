@@ -1,0 +1,30 @@
+# Data and cache (re-download with python download_data.py)
+data/
+
+# Outputs (re-run pipeline to regenerate)
+outputs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+.env
+.venv
+venv/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# HuggingFace / long lock filenames
+*.lock
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
