@@ -1,6 +1,7 @@
 """
 Run the full pipeline in order: data load -> train baselines -> train BERT -> eval LLM ->
 evaluate -> build networks -> analyze networks.
+BERT training uses all available GPUs automatically (accelerate launch --num_processes=N).
 """
 
 import os
@@ -13,6 +14,16 @@ os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
 # Suppress PyTorch pin_memory and NetworkX divide-by-zero warnings
 warnings.filterwarnings("ignore", message=".*pin_memory.*", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="networkx")
+
+
+def _num_gpus():
+    """Number of GPUs to use (1 if none or CPU-only)."""
+    try:
+        import torch
+        n = torch.cuda.device_count()
+        return max(1, n)
+    except Exception:
+        return 1
 
 STEPS = [
     ("data_load.py", "Step 1/8: Load data and label alignment"),
@@ -36,9 +47,33 @@ def run(script, description):
         sys.exit(r.returncode)
 
 
+def run_accelerate(script, description):
+    """Run script with 'accelerate launch', using all available GPUs (no accelerate config needed)."""
+    n = _num_gpus()
+    print("\n" + "=" * 60)
+    print(description)
+    if n > 1:
+        print("Using {} GPUs (accelerate launch --num_processes={})".format(n, n))
+    print("=" * 60)
+    cmd = [
+        "accelerate", "launch",
+        "--num_processes", str(n),
+        "--num_machines", "1",
+        "--mixed_precision", "no",
+        script,
+    ]
+    r = subprocess.run(cmd, cwd=os.path.dirname(os.path.abspath(__file__)))
+    if r.returncode != 0:
+        print("FAILED:", script)
+        sys.exit(r.returncode)
+
+
 if __name__ == "__main__":
     root = os.path.dirname(os.path.abspath(__file__))
     os.chdir(root)
     for script, desc in STEPS:
-        run(script, desc)
+        if script == "train_bert.py":
+            run_accelerate(script, desc)
+        else:
+            run(script, desc)
     print("\nDone. Outputs: outputs/results/ and outputs/figures/")
