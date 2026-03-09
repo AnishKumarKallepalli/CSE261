@@ -1,6 +1,6 @@
 """
-Save figures to outputs/figures/: confusion matrix (Reddit->Twitter) and emotion network graphs.
-Run after evaluate.py and build_networks.py (or at end of run_all.py).
+Save figures to outputs/figures/: confusion matrices (Reddit model on Reddit test + on Twitter)
+and emotion network graphs. Run after evaluate.py and build_networks.py (or at end of run_all.py).
 """
 import os
 import json
@@ -14,41 +14,65 @@ import networkx as nx
 import config
 
 
-def save_confusion_matrix():
+def _save_one_confusion_matrix(data, result_key, out_basename, title):
+    """Save a single confusion matrix figure if result_key exists in data."""
+    if result_key not in data or "confusion_matrix" not in data[result_key]:
+        return False
+    labels = data.get("label_names", config.SIX_LABELS)
+    cm = np.array(data[result_key]["confusion_matrix"])
+    n = cm.shape[0]
+    tick_labels = labels[:n] if len(labels) >= n else [str(i) for i in range(n)]
+    fig, ax = plt.subplots(figsize=(7, 6))
+    im = ax.imshow(cm, cmap="Blues")
+    ax.set_xticks(range(n))
+    ax.set_yticks(range(n))
+    ax.set_xticklabels(tick_labels, rotation=45, ha="right")
+    ax.set_yticklabels(tick_labels)
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("True")
+    cm_max = cm.max() if cm.size else 1
+    for i in range(n):
+        for j in range(min(n, cm.shape[1])):
+            ax.text(j, i, int(cm[i, j]), ha="center", va="center",
+                    color="black" if cm[i, j] < cm_max / 2 else "white")
+    plt.colorbar(im, ax=ax, label="Count")
+    ax.set_title(title)
+    plt.tight_layout()
+    out = os.path.join(config.FIGURES_DIR, out_basename)
+    plt.savefig(out, dpi=150)
+    plt.close()
+    print("Saved", out_basename)
+    return True
+
+
+def save_confusion_matrices():
+    """Save confusion matrix for Reddit model on Reddit test (GT) and on Twitter (cross-domain)."""
     path = os.path.join(config.RESULTS_DIR, "evaluation_results.json")
     if not os.path.exists(path):
+        print("No evaluation_results.json found; skipping confusion matrices")
         return
     with open(path) as f:
         data = json.load(f)
-    labels = data.get("label_names", config.SIX_LABELS)
-    # Prefer BERT cross-domain confusion matrix
+    # Reddit model on Reddit test (in-domain, ground truth Reddit)
+    for key in ("bert_reddit_on_reddit_test", "tfidf_lr_reddit_on_reddit_test"):
+        if _save_one_confusion_matrix(
+            data, key,
+            "confusion_matrix_reddit.png",
+            "Confusion matrix (Reddit model on Reddit test)\n" + key,
+        ):
+            break
+    else:
+        print("No Reddit-on-Reddit confusion matrix found in results")
+    # Reddit model on Twitter (cross-domain)
     for key in ("bert_reddit_on_twitter_test", "tfidf_lr_reddit_on_twitter_test"):
-        if key not in data or "confusion_matrix" not in data[key]:
-            continue
-        cm = np.array(data[key]["confusion_matrix"])
-        n = cm.shape[0]
-        tick_labels = labels[:n] if len(labels) >= n else [str(i) for i in range(n)]
-        fig, ax = plt.subplots(figsize=(7, 6))
-        im = ax.imshow(cm, cmap="Blues")
-        ax.set_xticks(range(n))
-        ax.set_yticks(range(n))
-        ax.set_xticklabels(tick_labels, rotation=45, ha="right")
-        ax.set_yticklabels(tick_labels)
-        ax.set_xlabel("Predicted")
-        ax.set_ylabel("True")
-        for i in range(n):
-            for j in range(min(n, cm.shape[1])):
-                ax.text(j, i, int(cm[i, j]), ha="center", va="center", color="black" if cm[i, j] < cm.max() / 2 else "white")
-        plt.colorbar(im, ax=ax, label="Count")
-        plt.title(f"Confusion matrix (Reddit model on Twitter)\n{key}")
-        plt.tight_layout()
-        out = os.path.join(config.FIGURES_DIR, "confusion_matrix.png")
-        plt.savefig(out, dpi=150)
-        plt.close()
-        print("Saved confusion_matrix.png")
-        return
-    print("No confusion matrix found in results")
-    return
+        if _save_one_confusion_matrix(
+            data, key,
+            "confusion_matrix_twitter.png",
+            "Confusion matrix (Reddit model on Twitter test)\n" + key,
+        ):
+            break
+    else:
+        print("No Reddit-on-Twitter confusion matrix found in results")
 
 
 def save_network_graph(G, out_path, title):
@@ -74,7 +98,7 @@ def save_network_graph(G, out_path, title):
 
 
 def main():
-    save_confusion_matrix()
+    save_confusion_matrices()
     path_r = os.path.join(config.OUTPUT_DIR, "network_reddit.pkl")
     path_t = os.path.join(config.OUTPUT_DIR, "network_twitter.pkl")
     if os.path.exists(path_r):

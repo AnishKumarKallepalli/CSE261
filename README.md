@@ -66,8 +66,10 @@ From `Code/`:
 ```powershell
 python data_load.py
 python train_baselines.py
+python train_bert_embeds.py
 python train_bert.py
 python eval_llm.py
+python eval_qwen_zero_shot.py
 python evaluate.py
 python build_networks.py
 python analyze_networks.py
@@ -116,8 +118,8 @@ git push -u origin main
 |------|----------|
 | `data/` | Datasets and `data_cache.json` (after `download_data.py`) |
 | `outputs/models/` | TF-IDF+LR, TF-IDF+SGD, BERT, Twitter baseline |
-| `outputs/results/` | `evaluation_results.json`, `network_analysis.json`, `llm_eval.json`, edge lists |
-| `outputs/figures/` | `confusion_matrix.png`, `network_reddit.png`, `network_twitter.png` |
+| `outputs/results/` | `evaluation_results.json`, `network_analysis.json`, `llm_eval.json`, `qwen_zero_shot.json`, edge lists |
+| `outputs/figures/` | `confusion_matrix_reddit.png`, `confusion_matrix_twitter.png`, `network_reddit.png`, `network_twitter.png` |
 | `outputs/network_*.pkl` | NetworkX graphs |
 
 ---

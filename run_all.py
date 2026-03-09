@@ -26,14 +26,16 @@ def _num_gpus():
         return 1
 
 STEPS = [
-    ("data_load.py", "Step 1/8: Load data and label alignment"),
-    ("train_baselines.py", "Step 2/8: Train TF-IDF+LR and TF-IDF+SGD"),
-    ("train_bert.py", "Step 3/8: Fine-tune BERT on Reddit"),
-    ("eval_llm.py", "Step 4/8: LLM/keyword baseline"),
-    ("evaluate.py", "Step 5/8: Evaluate all models"),
-    ("build_networks.py", "Step 6/8: Build emotion networks"),
-    ("analyze_networks.py", "Step 7/8: Network analysis"),
-    ("save_figures.py", "Step 8/8: Save figures (confusion matrix + networks)"),
+    ("data_load.py", "Step 1/10: Load data and label alignment"),
+    ("train_baselines.py", "Step 2/10: Train TF-IDF+LR and TF-IDF+SGD"),
+    ("train_bert_embeds.py", "Step 3/10: BERT embeddings + LR/SGD baselines"),
+    ("train_bert.py", "Step 4/10: Fine-tune BERT on Reddit"),
+    ("eval_llm.py", "Step 5/10: LLM/keyword baseline"),
+    ("eval_qwen_zero_shot.py", "Step 6/10: Zero-shot Qwen emotion classification"),
+    ("evaluate.py", "Step 7/10: Evaluate all models (Reddit & Twitter GT)"),
+    ("build_networks.py", "Step 8/10: Build emotion networks"),
+    ("analyze_networks.py", "Step 9/10: Network analysis"),
+    ("save_figures.py", "Step 10/10: Save figures (confusion matrix + networks)"),
 ]
 
 

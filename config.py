@@ -92,3 +92,6 @@ BERT_LR = 2e-5
 # Baseline embedding (for embed+NB/SGD): use a small pre-trained or simple average
 # We use sklearn's TfidfVectorizer for TF-IDF; for "embed" we use same TF-IDF as 300-dim then SGD (simpler, no gensim)
 USE_EMBED_MODEL = "tfidf"  # "tfidf" = no extra embed; set "glove" if you add GloVe later
+
+# Zero-shot Qwen (emotion classification)
+QWEN_MODEL_NAME = "Qwen/Qwen2.5-1.5B-Instruct"  # Use 7B or larger for better quality if GPU allows
