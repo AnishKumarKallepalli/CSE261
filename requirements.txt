@@ -11,5 +11,6 @@ numpy>=1.23.0
 networkx>=3.0
 tqdm>=4.65.0
 matplotlib>=3.5.0
+wordcloud>=1.9.0
 # Optional for LLM few-shot (uncomment if using API)
 # openai>=1.0.0
